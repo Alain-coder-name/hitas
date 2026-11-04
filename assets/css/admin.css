@@ -1,0 +1,359 @@
+/* =========================================================
+   HITAS — Feuille de style de l'administration
+   Couleurs alignées sur le site public (assets/css/site.css)
+   ========================================================= */
+
+:root {
+    --hitas-navy: #002147;
+    --hitas-navy-dark: #001328;
+    --hitas-gold: #9c7c3c;
+    --hitas-gold-light: #c9a962;
+    --hitas-ivory: #f4f1ea;
+    --admin-sidebar-width: 260px;
+    --admin-border: #e5e8ec;
+    --admin-bg: #f4f6f9;
+    --admin-text-muted: #6b7784;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    background: var(--admin-bg);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: #1c2b3a;
+}
+
+a { color: var(--hitas-navy); }
+a:hover { color: var(--hitas-gold); }
+
+/* ---------- Layout général ---------- */
+.admin-wrapper {
+    min-height: 100vh;
+}
+
+.admin-content {
+    min-width: 0;
+    background: var(--admin-bg);
+}
+
+.topbar {
+    height: 64px;
+    background: #fff;
+    border-bottom: 1px solid var(--admin-border);
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+}
+
+.topbar .dropdown-toggle::after { margin-left: 8px; }
+
+main.p-4 {
+    max-width: 1400px;
+}
+
+/* ---------- Sidebar ---------- */
+.admin-sidebar {
+    width: var(--admin-sidebar-width);
+    flex-shrink: 0;
+    background: var(--hitas-navy-dark);
+    color: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    position: sticky;
+    top: 0;
+    align-self: flex-start;
+    max-height: 100vh;
+    overflow-y: auto;
+}
+
+.sidebar-brand {
+    padding: 22px 20px;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sidebar-brand span {
+    display: block;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 0.68rem;
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--hitas-gold-light);
+    margin-top: 2px;
+}
+
+.admin-sidebar .nav {
+    padding: 10px 12px 24px;
+    flex: 1;
+}
+
+.admin-sidebar .nav-section {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 16px 12px 6px;
+}
+
+.admin-sidebar .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: rgba(255, 255, 255, 0.78);
+    padding: 9px 12px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    margin-bottom: 2px;
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.admin-sidebar .nav-link i {
+    font-size: 1rem;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.admin-sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.admin-sidebar .nav-link.active {
+    background: var(--hitas-gold);
+    color: #fff;
+    font-weight: 600;
+}
+
+.admin-sidebar .nav-collapse-caret {
+    margin-left: auto;
+    transition: transform 0.2s ease;
+}
+
+.admin-sidebar .nav-link[aria-expanded="true"] .nav-collapse-caret {
+    transform: rotate(180deg);
+}
+
+.admin-sidebar .nav-submenu {
+    padding-left: 14px;
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 2px 0 2px 22px;
+}
+
+.admin-sidebar .nav-submenu .nav-link {
+    font-size: 0.83rem;
+    padding: 7px 10px;
+}
+
+/* ---------- Cartes / widgets ---------- */
+.card {
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(15, 30, 50, 0.04);
+}
+
+.card .fs-3.fw-bold {
+    color: var(--hitas-navy);
+}
+
+/* ---------- Boutons ---------- */
+.btn-primary {
+    background-color: var(--hitas-navy);
+    border-color: var(--hitas-navy);
+}
+.btn-primary:hover,
+.btn-primary:focus {
+    background-color: var(--hitas-navy-dark);
+    border-color: var(--hitas-navy-dark);
+}
+.btn-outline-primary {
+    color: var(--hitas-navy);
+    border-color: var(--hitas-navy);
+}
+.btn-outline-primary:hover {
+    background-color: var(--hitas-navy);
+    border-color: var(--hitas-navy);
+}
+
+/* ---------- Tables ---------- */
+.table thead th {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--admin-text-muted);
+    border-bottom-width: 1px;
+    white-space: nowrap;
+}
+
+.table td, .table th {
+    vertical-align: middle;
+}
+
+/* ---------- Formulaires ---------- */
+.form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #33414f;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--hitas-gold);
+    box-shadow: 0 0 0 0.2rem rgba(156, 124, 60, 0.15);
+}
+
+/* ---------- Page de connexion ---------- */
+.login-page {
+    background: linear-gradient(160deg, var(--hitas-navy-dark) 0%, var(--hitas-navy) 100%);
+}
+
+.login-page .card {
+    border: none;
+    border-radius: 14px;
+}
+
+/* ---------- Sidebar mobile ---------- */
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 1050;
+        box-shadow: 8px 0 24px rgba(0, 0, 0, 0.25);
+    }
+    .admin-sidebar.is-open {
+        transform: translateX(0);
+    }
+    .admin-content {
+        width: 100%;
+    }
+}
+
+/* ---------- Miniatures d'images (listes & formulaires) ---------- */
+.thumb-preview {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid var(--admin-border);
+    background: #f4f6f9;
+    display: block;
+}
+
+/* ---------- Tableau de bord des messages (statuts) ---------- */
+.msg-status-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 1.25rem;
+}
+.msg-status-summary .msg-status-card {
+    flex: 1 1 180px;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.msg-status-summary .msg-status-count {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1;
+}
+.msg-status-summary .msg-status-label {
+    font-size: .8rem;
+    color: var(--admin-text-muted);
+}
+.msg-status-card--non_traite .msg-status-count { color: #d64545; }
+.msg-status-card--en_cours .msg-status-count { color: #b8860b; }
+.msg-status-card--traite .msg-status-count { color: #1f9d55; }
+
+.badge-select {
+    font-size: .78rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 20px;
+    padding: 4px 10px;
+    background-image: none;
+}
+.badge-select option {
+    color: #1c2b3a;
+    background: #fff;
+}
+
+/* ---------- Badge "Bronze" (catégorie Équipe) ---------- */
+.bg-brown {
+    background-color: #8a5a3b;
+    color: #fff;
+}
+
+/* ---------- Sélecteur de drapeau de pays (recherche par nom) ---------- */
+.flag-picker {
+    position: relative;
+    max-width: 320px;
+}
+.flag-picker-input-row {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+.flag-picker-preview {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    background: #f4f6f9;
+    border: 1px solid var(--admin-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+}
+.flag-picker-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: #fff;
+    border: 1px solid var(--admin-border);
+    border-radius: 8px;
+    box-shadow: 0 12px 28px rgba(0,20,40,0.14);
+    margin: 4px 0 0;
+    padding: 4px;
+    list-style: none;
+    max-height: 240px;
+    overflow-y: auto;
+}
+.flag-picker-list li {
+    padding: .5rem .65rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: .88rem;
+}
+.flag-picker-list li:hover {
+    background: var(--admin-bg);
+}
+.flag-picker-list li.flag-picker-empty {
+    cursor: default;
+    color: #8a97a3;
+    font-style: italic;
+}
+.flag-picker-list li.flag-picker-empty:hover {
+    background: none;
+}
+.flag-picker-flag {
+    display: inline-block;
+    width: 1.4em;
+}

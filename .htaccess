@@ -1,0 +1,22 @@
+# =========================================================
+# Sécurité du site HITAS (Apache) — à conserver à la racine du site
+# =========================================================
+
+# Jamais de liste de fichiers d'un dossier, pas de signature serveur.
+Options -Indexes -MultiViews
+ServerSignature Off
+
+# En-têtes de sécurité pour les fichiers STATIQUES (les pages PHP envoient les leurs
+# elles-mêmes : voir includes/security.php).
+<IfModule mod_headers.c>
+    <FilesMatch "(?i)\.(css|js|png|jpe?g|webp|gif|ico|svg|woff2?|ttf|mp4|webm|txt|xml|json)$">
+        Header always set X-Content-Type-Options "nosniff"
+        Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    </FilesMatch>
+</IfModule>
+
+# Fichiers qui ne doivent jamais être téléchargeables : documentation, bases de données,
+# journaux, sauvegardes, clés, fichiers de dépendances, fichiers cachés (.env, .git…).
+<FilesMatch "(?i)(^\.(?!well-known)|\.(sql|log|bak|old|orig|swp|sh|key|lock|dist|example)$|^(README|CHANGELOG|LICENSE)(\.md|\.txt)?$|^(composer|package)(-lock)?\.json$)">
+    Require all denied
+</FilesMatch>

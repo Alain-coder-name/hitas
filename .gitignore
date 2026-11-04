@@ -1,0 +1,43 @@
+# =============================================
+# HITAS — .gitignore
+# =============================================
+
+# --- Sensitive config (DB credentials, secret key) ---
+config/database.php
+config/secret.key
+
+# Keep the example file so others know what to configure
+!config/config.local.example.php
+
+# --- Uploaded media files (can be large / private) ---
+uploads/
+
+# --- Database dumps with real data ---
+# Keep schema files but exclude dumps with real data
+database/hitas_db*.sql
+database/add_florine_team.sql
+
+# --- Logs ---
+logs/
+
+# --- Scratch / temp work ---
+scratch_devis/
+_gh_upload/
+
+# --- OS files ---
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# --- PHP ---
+*.log
+php_errors.log
+
+# --- WampServer local config ---
+.claude/

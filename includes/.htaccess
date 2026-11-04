@@ -1,0 +1,2 @@
+# Code interne : jamais accessible directement depuis le web.
+Require all denied
