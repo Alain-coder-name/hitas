@@ -4,33 +4,61 @@ Institut Hanséatique de Technologie et de Sciences Appliquées
 
 Ce livrable contient la **base de données complète**, le **panneau d'administration fonctionnel** et le **site public** (Bootstrap), prêts à être hébergés.
 
+> 🔒 **Sécurité d'abord** : ce dépôt ne contient et ne doit jamais contenir de mot de passe, d'identifiant de base de données ou de clé secrète en clair. Lisez la section 2 avant toute mise en ligne.
+
 ## 1. Installation
 
-1. Créer une base MySQL et importer **le seul et unique fichier** `database/hitas_complete.sql` (structure + contenu réel + mot de passe admin vérifié, tout en un) :
+1. **Préparer le compte administrateur (avant l'import)**
+   Générez le hash d'un mot de passe fort (16 caractères minimum, unique, gardé dans un gestionnaire de mots de passe) :
+   ```
+   php -r "echo password_hash(readline('Mot de passe : '), PASSWORD_DEFAULT), PHP_EOL;"
+   ```
+   Copiez le hash obtenu dans `database/hitas_complete.sql`, à la place du hash du compte `admin` fourni, **avant** l'import. Ne notez jamais le mot de passe lui-même dans un fichier du projet.
+
+2. Créer une base MySQL et importer **le seul et unique fichier** `database/hitas_complete.sql` (structure + contenu réel) :
    ```
    mysql -u root -p < database/hitas_complete.sql
    ```
-   C'est le seul fichier SQL nécessaire pour une **nouvelle** installation. Il recrée tout de zéro (schéma + contenu), donc si vous réimportez, faites-le sur une base vide (ou droppez d'abord `hitas_db` si elle existe déjà, pour éviter les erreurs "table already exists").
+   Il recrée tout de zéro : faites-le sur une base vide (ou supprimez d'abord `hitas_db` si elle existe).
 
-   Si vous avez un site **déjà en ligne** (base existante des Lots précédents) et ne voulez pas tout réimporter, exécutez une seule fois `database/migration_lot_b.sql` : il ajoute les tables et colonnes du Lot B (sections d'accueil pilotables, hero enrichi, chiffres clés) sans toucher au contenu existant.
-2. Configurer les identifiants de connexion dans `config/database.php` (remplacer les valeurs de développement par celles de votre hébergeur) :
-   ```php
-   define('DB_HOST', 'localhost');
-   define('DB_NAME', 'hitas_db');
-   define('DB_USER', 'votre_utilisateur');
-   define('DB_PASS', 'votre_mot_de_passe');
-   ```
-3. Placer le dossier `hitas/` dans votre serveur web (`htdocs`, `www`...). Le site détecte automatiquement s'il est à la racine (hébergement définitif, ex: `https://votredomaine.com/`) ou dans un sous-dossier (test en local, ex: `http://localhost/hitas/`) : tous les liens, CSS, images s'adaptent tout seuls, sans rien à modifier (voir `config/database.php`, constante `BASE_URL`). Le fichier `.htaccess` à la racine, ainsi que ceux dans `database/`, `config/` et `includes/`, bloquent déjà l'accès web direct à ces dossiers sensibles — ne les supprimez pas.
-4. Vérifier que le dossier `uploads/` est accessible en écriture par le serveur (permissions 755/775).
-5. Accéder à `/admin/login.php`
+   Si vous avez un site **déjà en ligne**, exécutez une seule fois `database/migration_lot_b.sql` (tables et colonnes du Lot B) sans toucher au contenu existant.
 
-## 2. Connexion par défaut
+3. **Configurer la connexion à la base — sans la commiter**
+   - Copiez `config/database.example.php` en `config/database.php` (ou `.env.example` en `.env`) et renseignez vos valeurs :
+     ```php
+     define('DB_HOST', 'localhost');
+     define('DB_NAME', 'hitas_db');
+     define('DB_USER', 'utilisateur_dedie');
+     define('DB_PASS', 'mot_de_passe_long_et_unique');
+     ```
+   - Ajoutez au `.gitignore` : `config/database.php`, `.env`, `uploads/*` (sauf un `.gitkeep`).
+   - Créez un **utilisateur MySQL dédié** au site, avec uniquement les droits `SELECT, INSERT, UPDATE, DELETE` sur `hitas_db` (jamais `root`).
 
-| Utilisateur | Mot de passe |
-|---|---|
-| `admin` | `admin123` |
+4. Placer le dossier `hitas/` sur votre serveur web (`htdocs`, `www`...). Le site détecte automatiquement s'il est à la racine ou dans un sous-dossier (constante `BASE_URL`, voir `config/database.php`). Les fichiers `.htaccess` à la racine et dans `database/`, `config/` et `includes/` bloquent l'accès web direct à ces dossiers : **ne les supprimez pas**.
 
-⚠️ **Changez ce mot de passe immédiatement** via *Utilisateurs admin* une fois connecté, ou en créant un nouveau super-admin puis en supprimant celui-ci.
+5. Vérifier que `uploads/` est accessible en écriture par le serveur : permissions **755 (dossiers) / 644 (fichiers)**, jamais 777.
+
+6. Accéder à `/admin/login.php` avec le compte créé à l'étape 1.
+
+7. **Après l'installation, supprimez du serveur** : `database/hitas_complete.sql`, `database/migration_lot_b.sql`, `database/add_faq_seed.sql` (ils contiennent la structure complète et des hashs). Gardez-les uniquement en local ou dans un stockage privé.
+
+## 2. Sécurité et accès administrateur
+
+**Il n'y a pas de mot de passe par défaut.** Le mot de passe est celui que vous avez défini à l'étape 1 de l'installation.
+
+À faire impérativement avant la mise en ligne :
+
+- **Mot de passe fort et unique** pour chaque compte admin (16+ caractères). Pas de mot de passe réutilisé, pas de mot de passe dans le README, un e-mail ou une conversation.
+- **Renommer le compte `admin`** (créer un super-admin avec un identifiant non devinable, puis supprimer l'ancien) via *Utilisateurs admin*.
+- **HTTPS obligatoire** : installez un certificat (Let's Encrypt est gratuit) et forcez la redirection HTTP → HTTPS dans `.htaccess`.
+- **Limiter les tentatives de connexion** (blocage temporaire après 5 échecs) et idéalement ajouter une double authentification (2FA).
+- **Protéger `/admin/`** en plus : restriction par adresse IP dans `.htaccess` ou authentification HTTP supplémentaire si possible.
+- **Cookies de session sécurisés** : `session.cookie_httponly=1`, `session.cookie_secure=1`, `session.cookie_samesite=Strict`, et régénérer l'ID de session après connexion.
+- **Masquer les erreurs en production** : `display_errors = Off` (les erreurs vont dans un journal, pas à l'écran).
+- **Requêtes préparées (PDO/MySQLi)** partout et échappement des sorties (`htmlspecialchars`) pour éviter injections SQL et XSS.
+- **Sauvegardes régulières** de la base et de `uploads/`, stockées hors du serveur web.
+- **Mises à jour** : PHP, MySQL et le serveur à jour.
+- **Aucun secret dans Git** : si un mot de passe ou une clé a déjà été commité ou partagé, considérez-le comme compromis et changez-le immédiatement (le supprimer du fichier ne suffit pas, l'historique Git le conserve).
 
 ## 3. Structure du projet
 
@@ -38,78 +66,85 @@ Ce livrable contient la **base de données complète**, le **panneau d'administr
 hitas/
 ├── admin/              → tout le panneau d'administration
 │   ├── home/             (contenu texte de l'accueil : hero, piliers, CTA)
-│   ├── home_sections/    (activation/désactivation et réordonnancement des blocs de l'accueil, drag & drop)
-│   ├── hero_slides/      (diaporama d'accueil : image ou vidéo, titre/sous-titre/bouton, durée par slide)
+│   ├── home_sections/    (activation/réordonnancement des blocs de l'accueil, drag & drop)
+│   ├── hero_slides/      (diaporama d'accueil : image ou vidéo, titre/sous-titre/bouton, durée)
 │   ├── stats/            (chiffres clés de l'accueil, CRUD libre)
-│   ├── programs/        (programmes de formation)
-│   ├── partners/        (universités partenaires)
+│   ├── programs/         (programmes de formation)
+│   ├── partners/         (universités partenaires)
 │   ├── news/             (actualités)
-│   ├── team/              (équipe)
+│   ├── team/             (équipe)
 │   ├── testimonials/     (témoignages)
-│   ├── gallery/          (galerie photo + médiathèque unifiée, voir §10)
-│   ├── faq/                (FAQ)
+│   ├── gallery/          (galerie photo + médiathèque unifiée, voir §11)
+│   ├── faq/              (FAQ)
 │   ├── banners/          (bandeaux des pages Programmes/Partenaires/Équipe/Actualités/Postulez)
 │   ├── pages/            (pages statiques : À propos, Mission, Admissions...)
 │   ├── messages/         (messages reçus depuis le site public)
 │   ├── settings/         (paramètres généraux : logo, couleurs, contacts)
-│   └── users/             (gestion des comptes admin — réservé super-admin)
-├── config/database.php  → connexion à la base de données
+│   └── users/            (gestion des comptes admin — réservé super-admin)
+├── config/database.php  → connexion à la base (NON commité, voir .gitignore)
+├── config/database.example.php → modèle avec valeurs factices (commité)
 ├── includes/auth.php    → authentification, sécurité (CSRF), upload d'images et de vidéos
 ├── assets/               → CSS/JS de l'admin
 ├── uploads/              → images/vidéos uploadées (protégées contre l'exécution PHP)
-├── database/hitas_complete.sql → structure ET contenu réel, fichier unique pour une nouvelle installation
-└── database/migration_lot_b.sql → migration à jouer une fois sur un site existant (Lot B)
+└── database/             → fichiers SQL d'installation (à supprimer du serveur après usage)
 ```
 
 ## 4. Fonctionnement de chaque module
 
-Chaque module suit le même schéma simple :
+Chaque module suit le même schéma :
 - `list.php` — liste des éléments avec édition/suppression
 - `form.php` (ou `add.php` / `edit.php`) — formulaire d'ajout ou modification
 - `save.php` — traitement du formulaire
 - `delete.php` — suppression sécurisée
 
-Tous les formulaires sont protégés par jeton CSRF, et les images uploadées sont validées (jpg, jpeg, png, webp uniquement).
+Tous les formulaires sont protégés par jeton CSRF. Les uploads sont validés côté serveur (type MIME réel, extension, taille maximale) : images jpg, jpeg, png, webp ; vidéos mp4, webm. Les fichiers sont renommés à l'upload et le dossier `uploads/` n'exécute jamais de PHP.
 
 ## 5. Rôles
 
 - **super_admin** : accès à tout, y compris la gestion des comptes admin.
 - **editor** (rédacteur) : accès à tout le contenu, sauf la gestion des utilisateurs admin.
 
+Donnez à chaque personne le rôle minimal nécessaire et supprimez les comptes qui ne servent plus.
+
 ## 6. Publicités dans les actualités
 
-Dans **Actualités**, chaque article peut être marqué "Actualité" ou "Publicité". Pour une publicité, un champ **Lien externe de destination** apparaît : c'est l'URL (site partenaire, offre, etc.) vers laquelle le visiteur sera redirigé — dans un nouvel onglet — quand il clique sur cette publicité, que ce soit depuis la page d'accueil ou la page Actualités. Une publicité sans lien externe est refusée à l'enregistrement.
+Chaque article peut être marqué « Actualité » ou « Publicité ». Pour une publicité, le champ **Lien externe de destination** est obligatoire : le visiteur est redirigé vers cette URL dans un nouvel onglet (`rel="noopener noreferrer"`), depuis l'accueil ou la page Actualités. Une publicité sans lien externe est refusée à l'enregistrement. Seules les URL en `https://` doivent être acceptées.
 
 ## 7. Pilotage de la page d'accueil (Lot B)
 
-- **Sections & blocs** (`/admin/home_sections/list.php`) : chaque bloc de la page d'accueil (Hero, Chiffres clés, Filières phares, Partenaires, Piliers, Actualités, Témoignages, CTA final) peut être **désactivé** (masqué du site public) et **réordonné** par glisser-déposer directement dans la liste. Le nouvel ordre est enregistré automatiquement dès que vous relâchez un bloc.
-- **Diaporama accueil** (`/admin/hero_slides/list.php`) : chaque slide accepte une **image ou une vidéo courte** (mp4/webm, silencieuse, en boucle), un **titre**, un **sous-titre**, un **bouton** avec son lien, et sa propre **durée d'affichage**. Si le titre d'une slide est vide, le texte par défaut du bloc *Accueil* (`/admin/home/index.php`) reste affiché pendant cette slide.
-- **Chiffres clés** (`/admin/stats/list.php`) : CRUD libre (valeur, libellé, icône). Réordonnables par flèches monter/descendre. Si aucun chiffre n'est actif, le site affiche automatiquement les compteurs calculés (nombre de programmes/partenaires/pays publiés) comme avant.
-- Le menu de gauche regroupe désormais Programmes / Partenaires / Actualités / Équipe / Témoignages / FAQ / Pages sous une seule entrée dépliable **« Contenu »**.
+- **Sections & blocs** (`/admin/home_sections/list.php`) : chaque bloc de l'accueil (Hero, Chiffres clés, Filières phares, Partenaires, Piliers, Actualités, Témoignages, CTA final) peut être désactivé et réordonné par glisser-déposer ; l'ordre est enregistré automatiquement.
+- **Diaporama accueil** (`/admin/hero_slides/list.php`) : chaque slide accepte une image ou une vidéo courte (mp4/webm, silencieuse, en boucle), un titre, un sous-titre, un bouton avec lien et sa durée d'affichage. Si le titre est vide, le texte par défaut du bloc *Accueil* reste affiché.
+- **Chiffres clés** (`/admin/stats/list.php`) : CRUD libre (valeur, libellé, icône), réordonnables. Si aucun chiffre n'est actif, le site affiche les compteurs calculés (programmes/partenaires/pays publiés).
+- Le menu de gauche regroupe Programmes / Partenaires / Actualités / Équipe / Témoignages / FAQ / Pages sous l'entrée dépliable **« Contenu »**.
 
 ## 8. FAQ et bandeaux de pages
 
-- La page publique `/faq.php` affiche les questions publiées (module *FAQ* de l'admin), sous forme d'accordéon. Elle n'est pas dans le menu principal, mais elle est reliée à la page **Admissions** (qui n'y est pas non plus) : un bouton « Des questions ? Consultez la FAQ » y renvoie, et la FAQ renvoie elle-même vers Admissions et Postulez. Elle reste accessible directement (`/faq.php`) et indexée via le plan du site.
-- Un contenu FAQ de départ est inclus dans `database/hitas_complete.sql`. Si vous ne réimportez pas toute la base sur un site déjà en ligne, exécutez `database/add_faq_seed.sql` une seule fois pour peupler la page.
-- Le module *Bandeaux des pages* (`/admin/banners/index.php`) permet de modifier le titre, le petit texte au-dessus (eyebrow) et l'accroche affichés en haut des pages Programmes, Partenaires, Équipe, Actualités et Postulez — exactement comme le module *Accueil* le fait déjà pour la page d'accueil.
+- La page publique `/faq.php` affiche les questions publiées (module *FAQ*) sous forme d'accordéon. Elle n'est pas dans le menu principal mais est reliée à la page **Admissions** et à Postulez, et reste accessible directement et via le plan du site.
+- Un contenu FAQ de départ est inclus dans `database/hitas_complete.sql`. Sur un site déjà en ligne, exécutez `database/add_faq_seed.sql` une seule fois, puis supprimez-le du serveur.
+- Le module *Bandeaux des pages* (`/admin/banners/index.php`) permet de modifier titre, eyebrow et accroche des pages Programmes, Partenaires, Équipe, Actualités et Postulez.
 
-## 10. Galerie & Médiathèque unifiée (Lot C)
+## 9. Galerie & Médiathèque unifiée (Lot C)
 
-Le module *Galerie* (`/admin/gallery/list.php`) contient désormais deux onglets :
+Le module *Galerie* (`/admin/gallery/list.php`) contient deux onglets :
 
-- **Galerie** : inchangé, ce sont les photos "vie étudiante / campus" avec titre, catégorie et lien optionnel vers un programme ou un partenaire.
-- **Médiathèque** (`/admin/gallery/media.php`) : une **vue globale de tous les fichiers uploadés sur le site**, tous modules confondus (programmes, actualités, pages, partenaires, autres programmes, équipe, témoignages, galerie, diaporama d'accueil, favicon). Pour chaque fichier :
-  - **Recherche et filtres** : par nom de fichier, dossier d'origine, type (image/vidéo) et statut d'utilisation.
-  - **Traçage d'usage** : le bouton *« Utilisé (n) »* ouvre le détail exact des contenus qui référencent ce fichier (avec lien direct vers la fiche à modifier). Un fichier sans aucune référence est marqué **Orphelin**.
-  - **Suppression sécurisée** : la suppression est **automatiquement refusée** tant qu'au moins un contenu utilise le fichier (le message indique précisément où). Seuls les fichiers réellement inutilisés peuvent être supprimés du disque.
-  - **Remplacement en place** : uploader un nouveau fichier à la place d'un ancien l'écrase à l'identique (même nom, même emplacement) — toutes les pages qui l'affichaient sont donc mises à jour automatiquement, sans toucher à la base de données.
-  - **Ajout libre** : un fichier peut aussi être ajouté directement dans un dossier depuis la médiathèque, avant d'être utilisé plus tard dans un formulaire.
+- **Galerie** : photos « vie étudiante / campus » avec titre, catégorie et lien optionnel vers un programme ou un partenaire.
+- **Médiathèque** (`/admin/gallery/media.php`) : vue globale de tous les fichiers uploadés, tous modules confondus. Pour chaque fichier :
+  - **Recherche et filtres** : nom, dossier d'origine, type (image/vidéo), statut d'utilisation.
+  - **Traçage d'usage** : le bouton *« Utilisé (n) »* détaille les contenus qui référencent le fichier. Un fichier sans référence est marqué **Orphelin**.
+  - **Suppression sécurisée** : refusée tant qu'un contenu utilise le fichier.
+  - **Remplacement en place** : un nouvel upload écrase l'ancien (même nom, même emplacement), sans toucher à la base.
+  - **Ajout libre** : ajout direct dans un dossier avant utilisation.
 
-Cette fonctionnalité ne modifie ni ne requiert aucune nouvelle table : elle relit en temps réel les colonnes images/logos/vidéos existantes (`programs.image`, `news.image`, `partners.logo`, etc.) pour établir la correspondance fichier ↔ contenu.
+Aucune nouvelle table n'est requise : la médiathèque relit en temps réel les colonnes existantes (`programs.image`, `news.image`, `partners.logo`, etc.).
 
-## 11. Avant la mise en ligne définitive
+## 10. Checklist avant la mise en ligne définitive
 
-- Changez le mot de passe admin par défaut (`admin` / `admin123`) dès la première connexion.
-- Remplacez les identifiants de `config/database.php` par ceux de votre hébergeur.
-- Complétez et publiez les 14 programmes actuellement en brouillon (durée, description).
-- Ne supprimez pas les fichiers `.htaccess` (racine, `database/`, `config/`, `includes/`) : ils protègent les fichiers sensibles contre un accès direct par navigateur.
+- [ ] Mot de passe admin fort défini avant l'import, compte `admin` renommé
+- [ ] `config/database.php` renseigné avec un utilisateur MySQL dédié, et absent de Git
+- [ ] HTTPS actif et forcé
+- [ ] `display_errors = Off`
+- [ ] Fichiers `.sql` supprimés du serveur
+- [ ] `.htaccess` (racine, `database/`, `config/`, `includes/`) présents et fonctionnels
+- [ ] Permissions 755/644, aucun dossier en 777
+- [ ] Sauvegardes automatiques configurées
+- [ ] Les 14 programmes en brouillon complétés (durée, description) puis publiés
